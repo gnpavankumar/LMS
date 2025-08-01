@@ -9,6 +9,7 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
+    
 class Book(models.Model):
     title = models.CharField(max_length=255)
     author = models.CharField(max_length=255)
@@ -21,6 +22,7 @@ class Book(models.Model):
     total_copies = models.IntegerField(default=1)
     available_copies = models.IntegerField(default=1)
     description=models.CharField(max_length=255)
+    cover_image_url = models.CharField(max_length=500, blank=True, null=True)
 
     def save(self, *args, **kwargs):
         
