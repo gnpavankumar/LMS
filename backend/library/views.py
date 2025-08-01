@@ -8,6 +8,7 @@ from django.conf import settings
 from rest_framework import status
 from rest_framework.views import APIView
 from imagekitio import ImageKit
+from .permissions import IsAdmin, IsLibrarianOrAdmin, IsMember
 
 def homeview(request):
     return render(request,'home.html')
@@ -15,7 +16,7 @@ def homeview(request):
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated] 
+    permission_classes = [IsLibrarianOrAdmin] 
 
 class BookViewSet(viewsets.ModelViewSet):
     queryset = Book.objects.all()
@@ -25,7 +26,7 @@ class BookViewSet(viewsets.ModelViewSet):
 class LendingRecordViewSet(viewsets.ModelViewSet):
     queryset = LendingRecord.objects.all()
     serializer_class = LendingRecordSerializer
-    permission_classes = [permissions.IsAuthenticated] 
+    permission_classes = [IsLibrarianOrAdmin] 
 
 class ReservationViewSet(viewsets.ModelViewSet):
     queryset = Reservation.objects.all()
