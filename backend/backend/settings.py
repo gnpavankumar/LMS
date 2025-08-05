@@ -28,7 +28,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-AUTH_USER_MODEL = 'library.User'
+AUTH_USER_MODEL = 'accounts.User'
 
 # Application definition
 
@@ -39,9 +39,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'library',
+    'accounts',
+    'books',
+    'lending',
+    'reservations',
     'rest_framework',
-    'rest_framework_simplejwt'
+    'rest_framework_simplejwt',
 ]
 
 REST_FRAMEWORK={
