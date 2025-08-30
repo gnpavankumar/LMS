@@ -7,10 +7,15 @@ from .models import Book
 from .serializers import BookSerializer
 from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
 from django.http import Http404
+from rest_framework import viewsets
 
 class BookListCreateAPIView(APIView):
     # create, list
-    permission_classes=[IsLibrarianOrAdmin]
+    # permission_classes=[IsLibrarianOrAdmin]
+    def get_permissions(self):
+        if self.request.method in SAFE_METHODS:
+            return [IsAuthenticated()]
+        return [IsLibrarianOrAdmin()]
     def get(self,request, format=None):
         books=Book.objects.all().order_by('title')
         serializer=BookSerializer(books,many=True)
@@ -78,5 +83,9 @@ class BookDetailAPIView(APIView):
         book = self.get_object(pk)
         book.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+class booksView(viewsets.ModelViewSet):
+    model=Book
+    queryset=Book.objects.all()
+    serializer_class=BookSerializer
 
 

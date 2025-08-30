@@ -6,6 +6,7 @@ class User(AbstractUser):
     roleChoice=[('admin','Admin'),('librarian','Librarian'),('member','Member')]
     role=models.CharField(max_length=30,choices=roleChoice,default='member')
     phone=models.IntegerField(unique=True,null=True)
+    
 
     def __str__(self):
         return self.username

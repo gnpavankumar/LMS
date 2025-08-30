@@ -7,6 +7,9 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model=User
         fields=['id','username','password','name','phone','role','email']
+        extra_kwargs = {
+            'password': {'write_only': True}
+        }
         
     def create(self, validated_data):
         password = validated_data.pop('password')
@@ -16,10 +19,27 @@ class UserSerializer(serializers.ModelSerializer):
         return user
     
     def update(self, instance, validated_data):
+        request = self.context.get('request')
         password=validated_data.pop('password',None)
+        if not (request and request.user.role == 'admin'):
+            validated_data.pop('role', None)
         for attr, value in validated_data.items:
             setattr(instance, attr, value)
         if password:
             instance.set_password(password)
         instance.save()
         return instance
+    
+class RegisterSerializer(serializers.ModelSerializer):
+    password=serializers.CharField(write_only=True, required=True)
+    class Meta:
+        model=User
+        fields=['username','email','password']
+    
+    def create(self, validated_data):
+        password=validated_data.pop('password')
+        user=User(**validated_data)
+        user.set_password(password)
+        user.save()
+        return user
+    
