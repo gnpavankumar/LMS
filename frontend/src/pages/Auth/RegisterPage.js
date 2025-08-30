@@ -8,24 +8,24 @@ export default function RegisterPage() {
     password: "",
     confirm_password: "",
   });
-
+  
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
   };
-
+    const url="http://127.0.0.1:8000/api/auth/register/";
   const handleSubmit = (e) => {
     e.preventDefault();
-
+    
     if (formData.password !== formData.confirm_password) {
       alert("Passwords do not match!");
       return;
     }
-
+    
     axios
-      .post("http://127.0.0.1:8000/api/auth/register/", {
+      .post(url, {
         username: formData.username,
         email: formData.email,
         password: formData.password,
