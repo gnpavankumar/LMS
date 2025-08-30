@@ -45,6 +45,8 @@ INSTALLED_APPS = [
     'reservations',
     'rest_framework',
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
+    'corsheaders',
 ]
 
 REST_FRAMEWORK={
@@ -52,8 +54,20 @@ REST_FRAMEWORK={
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',)
 }
+from datetime import timedelta
+SIMPLE_JWT={
+    'ACCESS_TOKEN_LIFETIME':timedelta(minutes=30),
+    'REFRESH_TOKEN_LIFETIME':timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': True,
+}
+
+CORS_ALLOWED_ORIGINS=[
+    "http://localhost:3000",
+]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -61,6 +75,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    
 ]
 
 ROOT_URLCONF = 'backend.urls'

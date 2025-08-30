@@ -20,3 +20,13 @@ class IsAdmin(permissions.BasePermission):
     """
     def has_permission(self, request, view):
         return request.user and request.user.is_authenticated and request.user.role == 'admin'
+    
+class IsUserOrLibrarianOrAdmin(permissions.BasePermission):
+    """
+    Custom permission to allow a user to see their own profile,
+    while also allowing librarians and admins to see any profile.
+    """
+    def has_object_permission(self, request, view, obj):
+        if request.user.role in ['admin', 'librarian']:
+            return True
+        return obj == request.user
