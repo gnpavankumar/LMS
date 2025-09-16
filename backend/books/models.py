@@ -13,10 +13,15 @@ class Book(models.Model):
     available_copies = models.PositiveIntegerField(default=1)
     description=models.CharField(max_length=255)
     cover_image_url = models.CharField(max_length=500, blank=True, null=True)
-
-
-
     def _str_(self):
         return f"{self.title} by {self.author} (ISBN: {self.isbn})"
     class Meta:
         ordering = ['title']
+    @property
+    def is_available(self):
+        return self.available_copies > 0
+    
+    def save(self, *args, **kwargs):
+        if not self.pk:  # New book
+            self.available_copies = self.total_copies
+        super().save(*args,**kwargs)

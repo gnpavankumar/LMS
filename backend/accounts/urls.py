@@ -1,18 +1,28 @@
-from rest_framework.routers import DefaultRouter
-from .views import *
-from rest_framework_simplejwt.views import TokenObtainPairView,TokenRefreshView
 from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
+from .views import (
+    UserViewSet,
+    MemberDashboardView,
+    LibrarianDashboardView,
+    AdminDashboardView,
+    RegisterView,
+    LogoutView
+)
+
 router = DefaultRouter()
 router.register(r'users', UserViewSet, basename='user')
 
 urlpatterns = [
+    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('register/', RegisterView.as_view(), name='auth-register'),
-    path('login/', LoginView.as_view(), name='auth-login'),
-    path('refresh/', RefreshView.as_view(), name='auth-refresh'),
     path('logout/', LogoutView.as_view(), name='auth-logout'),
     path('member-dashboard/', MemberDashboardView.as_view(), name='member-dashboard'),
+    path('librarian-dashboard/', LibrarianDashboardView.as_view(), name='librarian-dashboard'),
     path('admin-dashboard/', AdminDashboardView.as_view(), name='admin-dashboard'),
-    path('librarian-dashboard/', AdminDashboardView.as_view(), name='librarian-dashboard'),
     path('', include(router.urls)),
-    # path("reg", register)
 ]

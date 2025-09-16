@@ -1,91 +1,79 @@
-from django.shortcuts import render
-from accounts.permissions import IsLibrarianOrAdmin
-from rest_framework.views import APIView
+from rest_framework import viewsets, filters, status
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from django_filters.rest_framework import DjangoFilterBackend
 from .models import Book
 from .serializers import BookSerializer
-from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
-from django.http import Http404
-from rest_framework import viewsets
+from accounts.permissions import IsLibrarianOrAdmin
+from rest_framework.decorators import action
+from rest_framework.parsers import MultiPartParser, FormParser
+import csv
+import io
+from django.db.models import F
 
-class BookListCreateAPIView(APIView):
-    # create, list
-    # permission_classes=[IsLibrarianOrAdmin]
-    def get_permissions(self):
-        if self.request.method in SAFE_METHODS:
-            return [IsAuthenticated()]
-        return [IsLibrarianOrAdmin()]
-    def get(self,request, format=None):
-        books=Book.objects.all().order_by('title')
-        serializer=BookSerializer(books,many=True)
-        return Response(serializer.data)
-    def post(self,request, format=None):
-        serializer=BookSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data,status=status.HTTP_201_CREATED)
-        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-    
-    
-class BookDetailAPIView(APIView):
-    
-    # retrieve , put, patch, detete
+class BookViewSet(viewsets.ModelViewSet):
+    queryset = Book.objects.all()
+    serializer_class = BookSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ['category', 'language', 'publication_year']
+    search_fields = ['title', 'author', 'isbn']
+
     def get_permissions(self):
         """
-        Allow all authenticated users to GET.
-        Only librarians or admins can PUT, PATCH, or DELETE.
+        Instantiates and returns the list of permissions that this view requires.
         """
-        if self.request.method in SAFE_METHODS:
-            return [IsAuthenticated()]
-        return [IsLibrarianOrAdmin()]
+        if self.action in ['list', 'retrieve', 'search']:
+            permission_classes = [IsAuthenticated]
+        else:
+            
+            permission_classes = [IsAuthenticated, IsLibrarianOrAdmin]
+        return [permission() for permission in permission_classes]
 
-    def get_object(self, pk):
+    @action(detail=False, methods=['post'], parser_classes=[MultiPartParser, FormParser])
+    def bulk_upload(self, request):
         """
-        Helper method to get a book object from the database or raise a 404 error.
+        Bulk upload book data via a CSV file.
         """
+        file_obj = request.data.get('file')
+        if not file_obj:
+            return Response({'error': 'No file uploaded'}, status=status.HTTP_400_BAD_REQUEST)
+
         try:
-            return Book.objects.get(pk=pk)
-        except Book.DoesNotExist:
-            raise Http404
+            decoded_file = file_obj.read().decode('utf-8')
+            io_string = io.StringIO(decoded_file)
+            reader = csv.DictReader(io_string)
+            books_to_create = []
+            for row in reader:
+                books_to_create.append(Book(
+                    title=row['title'],
+                    author=row['author'],
+                    isbn=row['isbn'],
+                    category=row.get('category'),
+                    language=row.get('language'),
+                    publication_year=row.get('publication_year'),
+                    total_copies=row.get('total_copies', 1),
+                    available_copies=row.get('available_copies', 1),
+                    description=row.get('description'),
+                    cover_image_url=row.get('cover_image_url')
+                ))
+            
+            Book.objects.bulk_create(books_to_create)
+            return Response({'message': f'{len(books_to_create)} books successfully uploaded.'}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    def get(self, request, pk, format=None):
-        """
-        Handle GET requests to retrieve a single book.
-        """
-        book = self.get_object(pk)
-        serializer = BookSerializer(book)
-        return Response(serializer.data)
+    def perform_create(self, serializer):
+        
+        total_copies = serializer.validated_data.get('total_copies', 1)
+        serializer.validated_data['available_copies'] = total_copies
+        serializer.save()
 
-    def put(self, request, pk, format=None):
-        """
-        Handle PUT requests to fully update a single book.
-        """
-        book = self.get_object(pk)
-        serializer = BookSerializer(book, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    def patch(self, request, pk, format=None):
-        book = self.get_object(pk)
-        serializer = BookSerializer(book, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, pk, format=None):
-        """
-        Handle DELETE requests to remove a single book.
-        """
-        book = self.get_object(pk)
-        book.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-class booksView(viewsets.ModelViewSet):
-    model=Book
-    queryset=Book.objects.all()
-    serializer_class=BookSerializer
-
-
+    def perform_update(self, serializer):
+        old_total_copies = self.get_object().total_copies
+        new_total_copies = serializer.validated_data.get('total_copies', old_total_copies)
+        
+        diff = new_total_copies - old_total_copies
+        if diff > 0:
+            serializer.validated_data['available_copies'] = F('available_copies') + diff
+        
+        serializer.save()

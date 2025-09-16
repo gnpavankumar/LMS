@@ -47,6 +47,9 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
+    'imagekit',
+    'django_filters',
+    
 ]
 
 REST_FRAMEWORK={
