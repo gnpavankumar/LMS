@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, generics
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.views import TokenObtainPairView,TokenRefreshView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .models import User
 from rest_framework.decorators import api_view
 from .serializers import UserSerializer, RegisterSerializer
@@ -20,8 +20,8 @@ class UserViewSet(viewsets.ModelViewSet):
             return [IsAuthenticated(), IsUserOrLibrarianOrAdmin()]
         elif self.action == 'destroy':
             return [IsLibrarianOrAdmin()]
-        return [] 
-    
+        return []
+
     def get_queryset(self):
         user = self.request.user
         if user.is_authenticated:
@@ -32,7 +32,7 @@ class UserViewSet(viewsets.ModelViewSet):
             else:
                 return User.objects.filter(pk=user.pk)
         return User.objects.none()
-    
+
     def create(self, request, *args, **kwargs):
         if request.user.role == 'librarian':
             requested_role = request.data.get('role', 'member')
@@ -42,51 +42,44 @@ class UserViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_403_FORBIDDEN
                 )
         return super().create(request, *args, **kwargs)
+
     serializer_class = UserSerializer
 
 class MemberDashboardView(generics.RetrieveAPIView):
     serializer_class = UserSerializer
     permission_classes = [IsMember]
-    
+
     def get_object(self):
         return self.request.user
+
+class LibrarianDashboardView(generics.RetrieveAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [IsLibrarianOrAdmin]
+
+    def get_object(self):
+        return self.request.user
+        
 class AdminDashboardView(generics.RetrieveAPIView):
     serializer_class = UserSerializer
     permission_classes = [IsAdmin]
+
     def get_object(self):
         return self.request.user
 
 class RegisterView(generics.CreateAPIView):
-    queryset=User.objects.all()
-    serializer_class=RegisterSerializer
-
-class LoginView(TokenObtainPairView):
-    pass
-
-class RefreshView(TokenRefreshView):
-    pass
+    queryset = User.objects.all()
+    serializer_class = RegisterSerializer
 
 class LogoutView(APIView):
-    permission_classes=[IsAuthenticated]
+    permission_classes = [IsAuthenticated]
+
     def post(self, request):
-        refresh=request.data.get('refresh')
+        refresh = request.data.get('refresh')
         if not refresh:
-            return Response({"detail":"Refresh token required."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "Refresh token required."}, status=status.HTTP_400_BAD_REQUEST)
         try:
-            token=RefreshToken(refresh)
+            token = RefreshToken(refresh)
             token.blacklist()
         except Exception:
-            return Response({'detail':'invalid or expired refresh token.'},status=status.HTTP_400_BAD_REQUEST)
-        return Response({'detail':'Logged out successfully.'},status=status.HTTP_205_RESET_CONTENT)
-    
-# @api_view(['POST'])
-# def register(request):
-#     username=request.data.get('username')
-#     email=request.data.get('email')
-#     password=request.data.get('password')
-#     if User.objects.filter(username=username).exists():
-#         return Response({'error':'username already exists'}, status=status.HTTP_404_NOT_FOUND)
-#     user=User.objects.create(username=username, email=email)
-#     user.set_password(password)
-#     user.save()
-#     return Response({"message":"user created successfully"}, status=status.HTTP_201_CREATED)
+            return Response({'detail': 'Invalid or expired refresh token.'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'detail': 'Logged out successfully.'}, status=status.HTTP_205_RESET_CONTENT)

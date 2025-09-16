@@ -1,9 +1,10 @@
-from  rest_framework import serializers
+from rest_framework import serializers
 from .models import User
 
 class UserSerializer(serializers.ModelSerializer):
     
-    password = serializers.CharField(write_only=True, required=True)
+    password = serializers.CharField(write_only=True, required=False) # Make password not required for updates
+    
     class Meta:
         model=User
         fields=['id','username','password','name','phone','role','email']
@@ -13,33 +14,36 @@ class UserSerializer(serializers.ModelSerializer):
         
     def create(self, validated_data):
         password = validated_data.pop('password')
-        user=User(**validated_data)
+        user = User(**validated_data)
         user.set_password(password)
         user.save()
         return user
     
     def update(self, instance, validated_data):
         request = self.context.get('request')
-        password=validated_data.pop('password',None)
+        password = validated_data.pop('password', None)
+        
+        # Only allow admins to change a user's role
         if not (request and request.user.role == 'admin'):
             validated_data.pop('role', None)
-        for attr, value in validated_data.items:
+
+        for attr, value in validated_data.items(): # Added parentheses here
             setattr(instance, attr, value)
         if password:
             instance.set_password(password)
         instance.save()
         return instance
-    
+
 class RegisterSerializer(serializers.ModelSerializer):
-    password=serializers.CharField(write_only=True, required=True)
-    class Meta:
-        model=User
-        fields=['username','email','password']
+    password = serializers.CharField(write_only=True, required=True)
     
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'password']
+        
     def create(self, validated_data):
-        password=validated_data.pop('password')
-        user=User(**validated_data)
+        password = validated_data.pop('password')
+        user = User(**validated_data)
         user.set_password(password)
         user.save()
         return user
-    
