@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import User
-
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 class UserSerializer(serializers.ModelSerializer):
     
     password = serializers.CharField(write_only=True, required=False) # Make password not required for updates
@@ -58,3 +58,10 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.role = 'member'  
         user.save()
         return user
+    
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        token['role'] = user.role 
+        return token

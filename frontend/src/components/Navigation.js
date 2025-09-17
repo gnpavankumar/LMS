@@ -1,34 +1,48 @@
-import { Link } from "react-router-dom";
-import axiosInstance from '../api/axiosInstance';
-import { logoutUser } from "../api/api";
+import React, { useContext } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { UserContext } from '../context/UserContext';
+import { logoutUser } from '../api/api';
 
+export default function Navbar() {
+  const navigate = useNavigate();
+  const { isAuthenticated, userRole, logout } = useContext(UserContext);
 
-export default function Navbar({ isAuthenticated }) {
+  const getDashboardPath = () => {
+    switch (userRole) {
+      case "member":
+        return "/member-dashboard";
+      case "librarian":
+        return "/librarian-dashboard";
+      case "admin":
+        return "/admin-dashboard";
+      default:
+        return "/";
+    }
+  };
+
   const handleLogout = async () => {
-        const refreshToken = localStorage.getItem("refresh_token");
-        if (refreshToken) {
-            try {
-                await logoutUser(refreshToken);
-            } catch (err) {
-                console.error("Logout failed:", err);
-            } finally {
-                localStorage.removeItem("access_token");
-                localStorage.removeItem("refresh_token");
-                window.location.href = "/login";
-                
-            }
-        }
-    };
+    const refreshToken = localStorage.getItem("refresh_token");
+    if (refreshToken) {
+      try {
+        await logoutUser(refreshToken);
+      } catch (err) {
+        console.error("Logout failed:", err);
+      } finally {
+        logout();
+        navigate("/login");
+      }
+    } else {
+      logout();
+      navigate("/login");
+    }
+  };
 
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-white shadow-sm border-bottom py-3">
       <div className="container">
-        {/* Brand / Logo */}
         <Link className="navbar-brand fw-bold text-primary fs-4" to="/">
           <i className="bi bi-book-half me-2"></i>MyLibrary
         </Link>
-
-        {/* Collapse button for mobile */}
         <button
           className="navbar-toggler"
           type="button"
@@ -37,15 +51,18 @@ export default function Navbar({ isAuthenticated }) {
         >
           <span className="navbar-toggler-icon"></span>
         </button>
-
-        {/* Menu */}
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav ms-auto align-items-center">
             {isAuthenticated ? (
               <>
                 <li className="nav-item">
-                  <Link className="nav-link" to="/tasks">
-                    <i className="bi bi-journal-text me-1"></i>Lending
+                  <Link className="nav-link" to="/books">
+                    Books
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link className="nav-link" to={getDashboardPath()}>
+                    Dashboard
                   </Link>
                 </li>
                 <li className="nav-item">

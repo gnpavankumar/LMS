@@ -1,23 +1,23 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { loginUser } from '../../api/api';
-
-
+import { useNavigate } from 'react-router-dom';
+import { UserContext } from '../../context/UserContext';
 export default function Login() {
   const [username, setUserName] = useState('');
   const [password, setPassword] = useState('');
+  const { login } = useContext(UserContext);
+
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
       const credentials = { username, password };
-      const res = await loginUser(credentials);   
-      
-      localStorage.setItem("access_token", res.data.access);
-      localStorage.setItem("refresh_token", res.data.refresh);
-
+      const res = await loginUser(credentials); 
+      login(res.data.access, res.data.refresh);
       alert("Logged in Successfully");
-      window.location.reload();
+      navigate('/dashboard-redirect');
     } catch (err) {
       console.error(err.response?.data);
       alert(err.response?.data?.detail || "Login failed");
