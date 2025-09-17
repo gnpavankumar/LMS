@@ -7,12 +7,13 @@ from rest_framework import status, generics
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .models import User
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, action
 from .serializers import UserSerializer, RegisterSerializer
 from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
 from django.http import Http404
 
 class UserViewSet(viewsets.ModelViewSet):
+    serializer_class = UserSerializer
     def get_permissions(self):
         if self.action in ['list', 'create']:
             return [IsLibrarianOrAdmin()]
@@ -21,7 +22,12 @@ class UserViewSet(viewsets.ModelViewSet):
         elif self.action == 'destroy':
             return [IsLibrarianOrAdmin()]
         return []
-
+    @action(detail=False, methods=['get'])
+    def me(self, request):
+        if request.user.is_authenticated:
+            serializer = self.get_serializer(request.user)
+            return Response(serializer.data)
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
     def get_queryset(self):
         user = self.request.user
         if user.is_authenticated:
@@ -43,7 +49,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 )
         return super().create(request, *args, **kwargs)
 
-    serializer_class = UserSerializer
+    
 
 class MemberDashboardView(generics.RetrieveAPIView):
     serializer_class = UserSerializer
