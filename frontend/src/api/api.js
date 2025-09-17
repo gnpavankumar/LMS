@@ -32,6 +32,7 @@ export const loginUser = (credentials) => axiosInstance.post('auth/token/', cred
 export const registerUser = (userData) => axiosInstance.post('auth/register/', userData);
 export const logoutUser = (refreshToken) => axiosInstance.post('auth/logout/', { refresh: refreshToken });
 export const getUserProfile = () => axiosInstance.get('auth/users/me/'); 
+export const updateUserProfile = (id, userData) => axiosInstance.patch(`auth/users/${id}/`, userData);
 export const getMemberDashboard = () => axiosInstance.get('auth/member-dashboard/');
 export const getLibrarianDashboard = () => axiosInstance.get('auth/librarian-dashboard/');
 export const getAdminDashboard = () => axiosInstance.get('auth/admin-dashboard/');
