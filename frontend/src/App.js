@@ -1,52 +1,93 @@
-import './App.css';
+import React, { useEffect, useState } from 'react';
+import { HashRouter, Routes, Route, useNavigate } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
 
-import {HashRouter, Routes, Route} from 'react-router-dom';
 import Member from './pages/dashboard/Member';
 import Navbar from './components/Navigation';
 import RegisterPage from './pages/Auth/RegisterPage';
 import Login from './pages/Auth/Login';
 import Footer from './components/Footer';
-import MyAccount from'./pages/MyAccount';
+import MyAccount from './pages/MyAccount';
 import Home from './pages/Home';
 import AdminDashboard from './pages/dashboard/Admin';
 import Librarian from './pages/dashboard/Librarian';
 
+// A helper component to handle role-based redirection
+const DashboardRedirect = () => {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const token = localStorage.getItem('access_token');
+    
+    if (token) {
+      try {
+        const decodedToken = jwtDecode(token);
+        
+        const userRole = decodedToken.role;
+        switch (userRole) {
+          case 'member':
+            navigate('/member-dashboard');
+            break;
+          case 'librarian':
+            navigate('/librarian-dashboard');
+            break;
+          case 'admin':
+            navigate('/admin-dashboard');
+            break;
+          default:
+            navigate('/member-dashboard');
+            break;
+        }
+      } catch (e) {
+        console.error("Invalid token:", e);
+        localStorage.clear();
+        navigate('/login');
+      }
+    } else {
+      navigate('/login');
+    }
+    setLoading(false);
+  }, [navigate]);
+
+  return loading ? <div>Loading...</div> : null;
+};
+
 function App() {
-  const isAuthenticated=!!localStorage.getItem('access_token')
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setIsAuthenticated(!!localStorage.getItem('access_token'));
+    };
+    window.addEventListener('storage', handleStorageChange);
+    handleStorageChange();
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   return (
     <HashRouter>
-      {/* Full-height flex container */}
       <div className="d-flex flex-column min-vh-100">
-        {/* Navbar */}
         <Navbar isAuthenticated={isAuthenticated} />
-
-        {/* Main content */}
         <main className="flex-grow-1">
           <Routes>
-            <Route
-             path="/"
-              element={isAuthenticated ? <Librarian/> : <Home />}
-              />
-            <Route
-              path="/register"
-              element={isAuthenticated ? <Member /> : <RegisterPage />}
-            />
-            <Route
-              path="/login"
-              element={isAuthenticated ? <Member /> : <Login />}
-            />
-            <Route
-              path="/logout"
-              element={isAuthenticated ? <Member /> : <Login />}
-            />
+            <Route path="/" element={<Home />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/login" element={<Login />} />
+            
+            {/* Redirect a user to their specific dashboard after login */}
+            <Route path="/dashboard-redirect" element={<DashboardRedirect />} />
+            
+            {/* Protected Routes - only accessible if authenticated */}
+            <Route path="/member-dashboard" element={<Member />} />
+            <Route path="/librarian-dashboard" element={<Librarian />} />
+            <Route path="/admin-dashboard" element={<AdminDashboard />} />
             <Route path="/myaccount" element={<MyAccount />} />
           </Routes>
         </main>
-
-        {/* Footer */}
         <Footer />
       </div>
     </HashRouter>
   );
 }
+
 export default App;
