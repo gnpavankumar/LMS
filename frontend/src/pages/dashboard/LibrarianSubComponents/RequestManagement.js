@@ -34,16 +34,35 @@ const RequestManagement = () => {
             setTimeout(() => setSuccess(null), 3000);
         } catch (err) {
             console.error("Fulfill request failed:", err.response?.data || err);
-            setError(err.response?.data?.error || "Failed to fulfill request.");
+            setError("Failed to fulfill request.");
         }
     };
+
+    const getSortedRequests = () => {
+        const activeRequests = bookRequests.filter(req => req.status === 'pending' || req.status === 'lending' || req.status === 'reserved');
+        const completedRequests = bookRequests.filter(req => req.status === 'fulfilled' || req.status === 'denied');
+
+        // Sort active requests: pending ones first, then by date
+        const sortedActive = activeRequests.sort((a, b) => {
+            if (a.status === 'pending' && b.status !== 'pending') return -1;
+            if (a.status !== 'pending' && b.status === 'pending') return 1;
+            return new Date(b.request_date) - new Date(a.request_date);
+        });
+
+        // Sort completed requests by date
+        const sortedCompleted = completedRequests.sort((a, b) => new Date(b.request_date) - new Date(a.request_date));
+
+        return [...sortedActive, ...sortedCompleted];
+    };
+
+    const sortedRequests = getSortedRequests();
 
     return (
         <div>
             {success && <div className="alert alert-success">{success}</div>}
             {error && <div className="alert alert-danger">{error}</div>}
             <div className="card">
-                <div className="card-header">Pending Book Requests</div>
+                <div className="card-header">Book Requests</div>
                 <div className="card-body">
                     {loading ? (
                         <div className="text-center">
@@ -64,8 +83,8 @@ const RequestManagement = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {bookRequests.length > 0 ? (
-                                        bookRequests.map((req) => (
+                                    {sortedRequests.length > 0 ? (
+                                        sortedRequests.map((req) => (
                                             <tr key={req.id}>
                                                 <td>{req.book_title}</td>
                                                 <td>{req.member_username}</td>
@@ -74,6 +93,8 @@ const RequestManagement = () => {
                                                     {req.status === 'lending' && <span className="badge bg-success">Lending in progress</span>}
                                                     {req.status === 'reserved' && <span className="badge bg-warning">Reserved</span>}
                                                     {req.status === 'pending' && <span className="badge bg-info">Pending</span>}
+                                                    {req.status === 'fulfilled' && <span className="badge bg-primary">Fulfilled</span>}
+                                                    {req.status === 'denied' && <span className="badge bg-danger">Denied</span>}
                                                 </td>
                                                 <td>
                                                     {req.is_active && (req.status === 'lending' || req.status === 'pending') && (
@@ -90,7 +111,7 @@ const RequestManagement = () => {
                                     ) : (
                                         <tr>
                                             <td colSpan="5" className="text-center">
-                                                No active book requests.
+                                                No book requests found.
                                             </td>
                                         </tr>
                                     )}

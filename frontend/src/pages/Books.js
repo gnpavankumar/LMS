@@ -55,8 +55,8 @@ export default function Books() {
                 setUserLendingRecords(userLendingRecordsArray);
                 setError("");
 
-                const genres = Array.from(new Set(booksArray.map(b => b.category).filter(Boolean)));
-                const languages = Array.from(new Set(booksArray.map(b => b.language).filter(Boolean)));
+                const genres = Array.from(new Set(booksArray.map(b => b.category).filter(Boolean))).sort();
+                const languages = Array.from(new Set(booksArray.map(b => b.language).filter(Boolean))).sort();
                 const years = Array.from(new Set(booksArray.map(b => b.publication_year).filter(Boolean))).sort((a, b) => a - b);
                 setDropdownData({ genres, languages, years });
             } catch (err) {
@@ -132,9 +132,12 @@ export default function Books() {
             const hasActiveRequest = userRequests.some(
                 req => req.book === book.id && req.is_active && req.member === currentUserId
             );
-            const isCurrentlyBorrowed = userLendingRecords.some(
-                rec => rec.book === book.id && !rec.return_date && rec.member === currentUserId
-            );
+            const isCurrentlyBorrowed = userLendingRecords.some(rec => 
+                String(rec.book?.id ?? rec.book) === String(book.id) &&
+                !rec.return_date &&
+                String(rec.member) === String(currentUserId)
+);
+
             return <BookCard key={book.id} book={book} hasActiveRequest={hasActiveRequest} isCurrentlyBorrowed={isCurrentlyBorrowed} />;
         });
     };
