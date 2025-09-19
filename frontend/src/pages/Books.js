@@ -9,7 +9,7 @@ export default function Books() {
     const [allBooks, setAllBooks] = useState([]);
     const [userRequests, setUserRequests] = useState([]);
     const [userLendingRecords, setUserLendingRecords] = useState([]);
-    const [currentUserId, setCurrentUserId] = useState(null); // New state to store the user's ID
+    const [currentUserId, setCurrentUserId] = useState(null);
     const [searchInput, setSearchInput] = useState("");
     const [search, setSearch] = useState("");
     const [genre, setGenre] = useState("");
@@ -68,11 +68,39 @@ export default function Books() {
             }
         };
         fetchData();
-    }, [currentUserId]);
+    }, [currentUserId, navigate]);
 
     const filterAndSearchBooks = () => {
         let filtered = [...allBooks];
-        // ... (existing filter logic)
+
+        if (search.trim()) {
+            filtered = filtered.filter(book =>
+                book.title.toLowerCase().includes(search.toLowerCase()) ||
+                book.author.toLowerCase().includes(search.toLowerCase()) ||
+                (book.isbn && book.isbn.includes(search))
+            );
+        }
+
+        if (genre) {
+            filtered = filtered.filter(book => book.category === genre);
+        }
+
+        if (language) {
+            filtered = filtered.filter(book => book.language === language);
+        }
+
+        if (year) {
+            filtered = filtered.filter(book => book.publication_year === parseInt(year));
+        }
+
+        if (availability) {
+            if (availability === "available") {
+                filtered = filtered.filter(book => book.available_copies > 0);
+            } else {
+                filtered = filtered.filter(book => book.available_copies <= 0);
+            }
+        }
+
         setBooks(filtered);
     };
 
@@ -114,7 +142,88 @@ export default function Books() {
     return (
         <div className="container mt-4">
             <h2 className="mb-4">Books Collection</h2>
-            {/* ... (omitted for brevity, assume the JSX is here) */}
+            {/* Search Bar */}
+            <div className="mb-4">
+                <div className="input-group">
+                    <span className="input-group-text" id="search-addon">
+                        <i className="bi bi-search"></i>
+                    </span>
+                    <input
+                        type="text"
+                        placeholder="Search books..."
+                        className="form-control"
+                        value={searchInput}
+                        onChange={(e) => setSearchInput(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && setSearch(searchInput)}
+                        aria-label="Search books"
+                        aria-describedby="search-addon"
+                    />
+                    <button
+                        className="btn btn-primary"
+                        type="button"
+                        onClick={() => setSearch(searchInput)}
+                    >
+                        Search
+                    </button>
+                </div>
+            </div>
+            {/* Filters */}
+            <div className="mb-4">
+                <div className="row">
+                    <div className="col-md-3">
+                        <select
+                            className="form-select"
+                            value={genre}
+                            onChange={(e) => setGenre(e.target.value)}
+                            aria-label="Select genre"
+                        >
+                            <option value="">All Genres</option>
+                            {dropdownData.genres.map((g, index) => (
+                                <option key={index} value={g}>{g}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="col-md-3">
+                        <select
+                            className="form-select"
+                            value={language}
+                            onChange={(e) => setLanguage(e.target.value)}
+                            aria-label="Select language"
+                        >
+                            <option value="">All Languages</option>
+                            {dropdownData.languages.map((l, index) => (
+                                <option key={index} value={l}>{l}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="col-md-3">
+                        <select
+                            className="form-select"
+                            value={year}
+                            onChange={(e) => setYear(e.target.value)}
+                            aria-label="Select year"
+                        >
+                            <option value="">All Years</option>
+                            {dropdownData.years.map((y, index) => (
+                                <option key={index} value={y}>{y}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="col-md-3">
+                        <select
+                            className="form-select"
+                            value={availability}
+                            onChange={(e) => setAvailability(e.target.value)}
+                            aria-label="Select availability"
+                        >
+                            <option value="">All Availability</option>
+                            <option value="available">Available</option>
+                            <option value="unavailable">Unavailable</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            {/* Books Grid */}
             <div className="row">
                 {renderBooks()}
             </div>
