@@ -70,9 +70,11 @@ SIMPLE_JWT={
 CORS_ALLOWED_ORIGINS=[
     "http://localhost:3000",
     "https://lms-ovtm.onrender.com",
-    "https://lms-liard-nine.vercel.app"
+    "https://lms-liard-nine.vercel.app",
 ]
-
+CSRF_TRUSTED_ORIGINS = [
+    "https://lms-liard-nine.vercel.app",
+]
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'lms-ovtm.onrender.com']
 
 MIDDLEWARE = [
