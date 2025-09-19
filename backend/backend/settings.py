@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-n)@m!a-obh@&!+m&ztz3ri#slfnlze)_3%oe8ibe1(+s^%6$)@
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+
 
 AUTH_USER_MODEL = 'accounts.User'
 
@@ -71,6 +71,8 @@ CORS_ALLOWED_ORIGINS=[
     "http://localhost:3000",
     "https://lms-ovtm.onrender.com"
 ]
+
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'lms-ovtm.onrender.com']
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
