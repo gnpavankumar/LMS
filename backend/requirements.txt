@@ -5,7 +5,7 @@ djangorestframework==3.16.0
 rest_framework_simplejwt==0.0.2
 imagekitio==4.1.0
 djangorestframework-simplejwt==5.5.1
-django-cros-headers==4.7.0
+django-cros-headers
 django-imagekit==5.0.0
 pillow==11.3.0
 django-filter==25.1
