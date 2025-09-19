@@ -9,7 +9,7 @@ from books.models import Book
 import datetime
 from accounts.models import User
 from django.utils import timezone
-
+from reservations.models import Reservation
 class LendingRecordViewSet(viewsets.ModelViewSet):
     queryset = LendingRecord.objects.all()
     serializer_class = LendingRecordSerializer
@@ -68,25 +68,29 @@ class LendingRecordViewSet(viewsets.ModelViewSet):
             if lending.return_date:
                 return Response({'error': 'This book has already been returned.'}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Use timezone.now() to get a timezone-aware datetime object
             lending.return_date = timezone.now()
-
-            # Compare timezone-aware datetimes
             if lending.due_date < lending.return_date:
-                days_overdue = (lending.return_date - lending.due_date).days
+                days_overdue = (lending.return_date.date() - lending.due_date.date()).days
                 fine_amount = days_overdue * 0.50
                 lending.fine_amount = fine_amount
                 lending.is_overdue = True
-
             lending.save()
 
-            # Update book's available copies
             book = lending.book
             book.available_copies += 1
             book.save()
 
+
+            next_reservation = Reservation.objects.filter(book=book).order_by('position').first()
+            if next_reservation:
+
+                BookRequest.objects.create(
+                    book=book,
+                    member=next_reservation.member,
+                    status='lending'
+                )
             serializer = self.get_serializer(lending)
             return Response(serializer.data)
-
+            
         except LendingRecord.DoesNotExist:
             return Response({'error': 'Lending record not found.'}, status=status.HTTP_404_NOT_FOUND)

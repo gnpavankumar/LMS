@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { getBookRequests, fulfillRequest } from "../../../api/api";
-import { Link } from "react-router-dom";
+import { getBookRequests, fulfillRequest, cancelBookRequest } from "../../../api/api";
 
 const RequestManagement = () => {
     const [bookRequests, setBookRequests] = useState([]);
@@ -38,21 +37,30 @@ const RequestManagement = () => {
         }
     };
 
+    const handleCancelRequest = async (requestId) => {
+        try {
+            await cancelBookRequest(requestId);
+            setSuccess("Book request cancelled successfully!");
+            fetchRequests(); // Refresh the list of requests
+            setTimeout(() => setSuccess(null), 3000);
+        } catch (err) {
+            console.error("Cancel request failed:", err.response?.data || err);
+            setError(err.response?.data?.error || "Failed to cancel request.");
+        }
+    };
+    
+    // Sorting logic to put pending requests first, and others by date
     const getSortedRequests = () => {
-        const activeRequests = bookRequests.filter(req => req.status === 'pending' || req.status === 'lending' || req.status === 'reserved');
-        const completedRequests = bookRequests.filter(req => req.status === 'fulfilled' || req.status === 'denied');
-
-        // Sort active requests: pending ones first, then by date
-        const sortedActive = activeRequests.sort((a, b) => {
-            if (a.status === 'pending' && b.status !== 'pending') return -1;
-            if (a.status !== 'pending' && b.status === 'pending') return 1;
-            return new Date(b.request_date) - new Date(a.request_date);
-        });
-
-        // Sort completed requests by date
-        const sortedCompleted = completedRequests.sort((a, b) => new Date(b.request_date) - new Date(a.request_date));
-
-        return [...sortedActive, ...sortedCompleted];
+        const pendingRequests = bookRequests.filter(req => req.status === 'pending');
+        const otherRequests = bookRequests.filter(req => req.status !== 'pending');
+        
+        // Sort pending requests by date (most recent first)
+        const sortedPending = pendingRequests.sort((a, b) => new Date(b.request_date) - new Date(a.request_date));
+        
+        // Sort other requests by date (most recent first)
+        const sortedOther = otherRequests.sort((a, b) => new Date(b.request_date) - new Date(a.request_date));
+        
+        return [...sortedPending, ...sortedOther];
     };
 
     const sortedRequests = getSortedRequests();
@@ -97,13 +105,23 @@ const RequestManagement = () => {
                                                     {req.status === 'denied' && <span className="badge bg-danger">Denied</span>}
                                                 </td>
                                                 <td>
-                                                    {req.is_active && (req.status === 'lending' || req.status === 'pending') && (
-                                                        <button
-                                                            className="btn btn-sm btn-success"
-                                                            onClick={() => handleFulfillRequest(req.id)}
-                                                        >
-                                                            Lend
-                                                        </button>
+                                                    {req.is_active && (
+                                                        <div className="d-flex gap-2">
+                                                            {req.status !== 'reserved' && (
+                                                                <button
+                                                                    className="btn btn-sm btn-success"
+                                                                    onClick={() => handleFulfillRequest(req.id)}
+                                                                >
+                                                                    Lend
+                                                                </button>
+                                                            )}
+                                                            <button
+                                                                className="btn btn-sm btn-danger"
+                                                                onClick={() => handleCancelRequest(req.id)}
+                                                            >
+                                                                Cancel
+                                                            </button>
+                                                        </div>
                                                     )}
                                                 </td>
                                             </tr>
