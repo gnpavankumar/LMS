@@ -11,8 +11,9 @@ import MyAccount from './pages/MyAccount';
 import Home from './pages/Home';
 import AdminDashboard from './pages/dashboard/Admin';
 import Librarian from './pages/dashboard/Librarian';
+import Books from './pages/Books';
 
-// A helper component to handle role-based redirection
+
 const DashboardRedirect = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -73,6 +74,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/books" element={<Books />} />
             
             {/* Redirect a user to their specific dashboard after login */}
             <Route path="/dashboard-redirect" element={<DashboardRedirect />} />

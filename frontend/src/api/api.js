@@ -1,7 +1,7 @@
 import axiosInstance from './axiosInstance';
 
 // Book Catalog Endpoints
-export const getBooks = () => axiosInstance.get('books/books/');
+export const getBooks = (params = {}) => axiosInstance.get('books/books/', { params });
 export const getBookDetails = (id) => axiosInstance.get(`books/books/${id}/`);
 export const createBook = (bookData) => axiosInstance.post('books/books/', bookData);
 export const updateBook = (id, bookData) => axiosInstance.patch(`books/books/${id}/`, bookData);
@@ -15,6 +15,11 @@ export const bulkUploadBooks = (file) => {
         },
     });
 };
+// Book Request Endpoints
+export const getBookRequests = () => axiosInstance.get('requests/book-requests/');
+export const createBookRequest = (book_id) => axiosInstance.post('requests/book-requests/', { book_id });
+export const fulfillRequest = (id) => axiosInstance.post(`requests/book-requests/${id}/fulfill/`);
+export const cancelBookRequest = (id) => axiosInstance.post(`requests/book-requests/${id}/cancel/`);
 
 // Lending and Fines Endpoints
 export const getLendingRecords = () => axiosInstance.get('lending/lending-records/');
