@@ -15,7 +15,6 @@ export const UserProvider = ({ children }) => {
                 setIsAuthenticated(true);
                 setUserRole(decodedToken.role);
             } catch (e) {
-                // Invalid token, clear storage
                 localStorage.clear();
                 setIsAuthenticated(false);
                 setUserRole(null);

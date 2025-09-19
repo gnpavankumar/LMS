@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'imagekit',
     'django_filters',
+    'book_requests',
     
 ]
 

@@ -40,7 +40,7 @@ export default function Navbar() {
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-white shadow-sm border-bottom py-3">
       <div className="container">
-        <Link className="navbar-brand fw-bold text-primary fs-4" to="/">
+        <Link className="navbar-brand fw-bold text-primary fs-4" to={getDashboardPath()}>
           <i className="bi bi-book-half me-2"></i>MyLibrary
         </Link>
         <button

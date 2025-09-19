@@ -24,6 +24,7 @@ urlpatterns = [
     path('api/books/', include('books.urls')),
     path('api/lending/', include('lending.urls')),
     path('api/reservations/', include('reservations.urls')),
+    path('api/requests/', include('book_requests.urls'))
     
 
 ]
