@@ -8,6 +8,7 @@ from accounts.permissions import IsLibrarianOrAdmin
 from books.models import Book
 import datetime
 from accounts.models import User
+from django.utils import timezone
 
 class LendingRecordViewSet(viewsets.ModelViewSet):
     queryset = LendingRecord.objects.all()
@@ -66,25 +67,26 @@ class LendingRecordViewSet(viewsets.ModelViewSet):
             lending = self.get_object()
             if lending.return_date:
                 return Response({'error': 'This book has already been returned.'}, status=status.HTTP_400_BAD_REQUEST)
-            
-            lending.return_date = datetime.datetime.now()
-            
-            # Calculate fine for overdue books
+
+            # Use timezone.now() to get a timezone-aware datetime object
+            lending.return_date = timezone.now()
+
+            # Compare timezone-aware datetimes
             if lending.due_date < lending.return_date:
                 days_overdue = (lending.return_date - lending.due_date).days
-                fine_amount = days_overdue * 0.50 # Example: 50 cents per day
+                fine_amount = days_overdue * 0.50
                 lending.fine_amount = fine_amount
                 lending.is_overdue = True
-            
+
             lending.save()
-            
+
             # Update book's available copies
             book = lending.book
             book.available_copies += 1
             book.save()
-            
+
             serializer = self.get_serializer(lending)
             return Response(serializer.data)
-            
+
         except LendingRecord.DoesNotExist:
             return Response({'error': 'Lending record not found.'}, status=status.HTTP_404_NOT_FOUND)

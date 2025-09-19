@@ -53,6 +53,7 @@ const BookRequests = () => {
     if (error) {
         return <div className="alert alert-danger">{error}</div>;
     }
+    const sortedRequests = [...bookRequests].sort((a, b) => new Date(b.request_date) - new Date(a.request_date));
 
     return (
         <div className="card shadow-sm mb-4">
@@ -60,11 +61,10 @@ const BookRequests = () => {
                 <h5 className="mb-0"><i className="bi bi-list me-2"></i>My Book Requests</h5>
             </div>
             <div className="card-body">
-                {/* Display alert messages based on state */}
                 {successMessage && <div className="alert alert-success">{successMessage}</div>}
                 {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
                 
-                {bookRequests.length > 0 ? (
+                {sortedRequests.length > 0 ? (
                     <div className="table-responsive">
                         <table className="table table-striped">
                             <thead>
@@ -76,7 +76,7 @@ const BookRequests = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {bookRequests.map((req) => (
+                                {sortedRequests.map((req) => (
                                     <tr key={req.id}>
                                         <td>{req.book_title}</td>
                                         <td>{new Date(req.request_date).toLocaleDateString()}</td>
