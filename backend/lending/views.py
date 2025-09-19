@@ -10,6 +10,7 @@ import datetime
 from accounts.models import User
 from django.utils import timezone
 from reservations.models import Reservation
+from book_requests.models import BookRequest
 class LendingRecordViewSet(viewsets.ModelViewSet):
     queryset = LendingRecord.objects.all()
     serializer_class = LendingRecordSerializer
