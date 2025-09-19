@@ -2,7 +2,7 @@ import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 
 const axiosInstance = axios.create({
-    baseURL: 'http://127.0.0.1:8000/api/',
+    baseURL: 'https://lms-ovtm.onrender.com/api/',
     timeout: 10000,
 });
 
@@ -17,7 +17,7 @@ axiosInstance.interceptors.request.use(async (config) => {
 
         if (isExpired && refreshToken) {
             try {
-                const response = await axios.post('http://127.0.0.1:8000/api/auth/token/refresh/', {
+                const response = await axios.post('https://lms-ovtm.onrender.com/api/auth/token/refresh/', {
                     refresh: refreshToken,
                 });
                 const newAccessToken = response.data.access;
