@@ -69,7 +69,7 @@ SIMPLE_JWT={
 
 CORS_ALLOWED_ORIGINS=[
     "http://localhost:3000",
-    "http://lms-ovtm.onrender.com"
+    "https://lms-ovtm.onrender.com"
 ]
 
 MIDDLEWARE = [
