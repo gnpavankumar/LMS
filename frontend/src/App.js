@@ -12,6 +12,7 @@ import Home from './pages/Home';
 import AdminDashboard from './pages/dashboard/Admin';
 import Librarian from './pages/dashboard/Librarian';
 import Books from './pages/Books';
+import AdminReports from './pages/dashboard/AdminSubComponents/AdminReports';
 
 
 const DashboardRedirect = () => {
@@ -83,6 +84,7 @@ function App() {
             <Route path="/member-dashboard" element={<Member />} />
             <Route path="/librarian-dashboard" element={<Librarian />} />
             <Route path="/admin-dashboard" element={<AdminDashboard />} />
+            <Route path="/admin-reports" element={<AdminReports />} />
             <Route path="/myaccount" element={<MyAccount />} />
           </Routes>
         </main>
