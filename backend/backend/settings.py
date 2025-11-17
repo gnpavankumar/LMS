@@ -160,6 +160,3 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-IMAGEKIT_PUBLIC_KEY='public_54DqzFgzG6zDUqtrZSqsyaE7ea0='
-IMAGEKIT_PRIVATE_KEY='private_Ob1no3bQipdStz1UbIAnI8ltiT8='
-IMAGEKIT_URL_ENDPOINT='https://ik.imagekit.io/LMSv1'
